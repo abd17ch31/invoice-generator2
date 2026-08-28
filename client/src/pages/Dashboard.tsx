@@ -6,6 +6,7 @@ import {
   Plus,
   ArrowUpRight,
   LogOut,
+  Shield,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
@@ -61,8 +62,8 @@ const navigate = useNavigate();
           api.get("/dashboard/recent-invoices"),
         ]);
 
-        setStats(statsResponse.data.stats);
-        setInvoices(invoicesResponse.data.invoices);
+        setStats(statsResponse.data.stats ?? { customers: 0, invoices: 0, revenue: 0 });
+        setInvoices(invoicesResponse.data.invoices ?? []);
       } catch (error) {
         console.error("Failed to load dashboard:", error);
       } finally {
@@ -116,6 +117,16 @@ const navigate = useNavigate();
             <FileText size={19} />
             Invoices
           </a>
+
+          {user?.role === "ADMIN" && (
+            <a
+              href="/admin"
+              className="mt-2 flex items-center gap-3 rounded-lg px-4 py-3 text-slate-400 transition hover:bg-slate-800 hover:text-white"
+            >
+              <Shield size={19} />
+              Admin
+            </a>
+          )}
 
         </nav>
       </aside>

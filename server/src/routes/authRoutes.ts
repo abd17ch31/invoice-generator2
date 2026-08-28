@@ -57,6 +57,7 @@ router.post("/login", async (req, res) => {
       {
         userId: user.id,
         email: user.email,
+        role: user.role,
       },
       jwtSecret,
       {
@@ -72,6 +73,7 @@ router.post("/login", async (req, res) => {
         id: user.id,
         name: user.name,
         email: user.email,
+        role: user.role,
       },
     });
   } catch (error) {
@@ -98,6 +100,7 @@ router.get("/me", authenticate, async (req: AuthRequest, res) => {
         id: true,
         name: true,
         email: true,
+        role: true,
         createdAt: true,
       },
     });

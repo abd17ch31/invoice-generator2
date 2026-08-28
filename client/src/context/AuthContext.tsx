@@ -11,6 +11,7 @@ interface User {
   id: string;
   name: string;
   email: string;
+  role?: string;
 }
 
 interface AuthContextType {
@@ -38,17 +39,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
+    const validateSession = async () => {
+      const storedToken = localStorage.getItem("token");
 
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("user");
+      if (!storedToken) {
+        setLoading(false);
+        return;
       }
-    }
 
-    setLoading(false);
+      try {
+        const response = await api.get("/auth/me");
+        const user = response.data.user;
+
+        localStorage.setItem("user", JSON.stringify(user));
+        setUser(user);
+      } catch {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        setToken(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    validateSession();
   }, []);
 
   const login = async (email: string, password: string) => {

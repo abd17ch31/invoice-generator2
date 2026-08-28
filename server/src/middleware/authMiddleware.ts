@@ -5,6 +5,7 @@ export interface AuthRequest extends Request {
   user?: {
     userId: string;
     email: string;
+    role: string;
   };
 }
 
@@ -34,11 +35,13 @@ export const authenticate = (
     const decoded = jwt.verify(token, jwtSecret) as {
       userId: string;
       email: string;
+      role?: string;
     };
 
     req.user = {
       userId: decoded.userId,
       email: decoded.email,
+      role: decoded.role ?? "USER",
     };
 
     next();
@@ -48,4 +51,19 @@ export const authenticate = (
       message: "Invalid or expired token",
     });
   }
+};
+
+export const requireAdmin = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  if (!req.user || req.user.role !== "ADMIN") {
+    return res.status(403).json({
+      success: false,
+      message: "Forbidden: admin access required",
+    });
+  }
+
+  next();
 };
