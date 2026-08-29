@@ -2,11 +2,24 @@ import { authenticate, AuthRequest } from "../middleware/authMiddleware.js";
 import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
 import prisma from "../config/database.js";
 
 const router = express.Router();
 
-router.post("/login", async (req, res) => {
+// Strict rate limit for login attempts: 5 per 15 minutes per IP
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many login attempts, please try again later",
+  },
+});
+
+router.post("/login", loginLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 

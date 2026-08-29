@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import "dotenv/config";
 import userRoutes from "./routes/userRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -20,6 +21,20 @@ app.use(
   })
 );
 app.use(express.json());
+
+// Global rate limit: 100 requests per 15 minutes per IP
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many requests, please try again later",
+  },
+});
+
+app.use("/api", apiLimiter);
 
 app.get("/api/health", (req, res) => {
   res.json({

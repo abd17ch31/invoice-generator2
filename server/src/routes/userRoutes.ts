@@ -1,5 +1,6 @@
 import express from "express";
 import bcrypt from "bcryptjs";
+import rateLimit from "express-rate-limit";
 import prisma from "../config/database.js";
 import { Role } from "../generated/prisma/enums.js";
 import {
@@ -9,6 +10,18 @@ import {
 } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+// Strict rate limit for registration: 5 per hour per IP
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many accounts created from this IP, please try again later",
+  },
+});
 
 // GET /api/users (admin only)
 router.get(
@@ -182,7 +195,7 @@ router.delete(
 );
 
 // POST /api/users/register
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimiter, async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
